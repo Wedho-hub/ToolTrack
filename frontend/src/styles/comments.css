@@ -1,0 +1,89 @@
+/* ToolTrack - Component Styling Comments */
+
+/* ==========================================
+   GLOBAL STYLES & VARIABLES
+   ========================================== */
+
+/* Color Palette:
+   - Primary: #007bff (Bootstrap Blue)
+   - Secondary: #6c757d (Bootstrap Gray)
+   - Success: #28a745 (Bootstrap Green)
+   - Warning: #ffc107 (Bootstrap Yellow)
+   - Danger: #dc3545 (Bootstrap Red)
+   - Background: #f8f9fa (Light Gray)
+   - Text: #212529 (Dark Gray)
+*/
+
+/* ==========================================
+   AUTHENTICATION COMPONENTS
+   ========================================== */
+
+/* Login/Register Forms */
+/* Login.jsx & Register.jsx
+   - Uses Bootstrap 5 classes for responsive design
+   - Card-based layout with shadow effects for depth
+   - Form validation with real-time feedback
+   - Responsive grid system for mobile-first design
+*/
+
+/* ==========================================
+   TOOL MANAGEMENT COMPONENTS
+   ========================================== */
+
+/* ToolForm.jsx
+   - Responsive form layout using Bootstrap grid
+   - Input validation with visual feedback
+   - Modal-based design for better UX
+   - Loading states during API calls
+*/
+
+/* ManageTools.jsx
+   - Card-based grid layout for tool display
+   - Responsive table/grid for mobile devices
+   - Hover effects for interactive elements
+   - Pagination for large datasets
+*/
+
+/* ==========================================
+   DASHBOARD COMPONENTS
+   ========================================== */
+
+/* Dashboard.jsx
+   - Card-based layout for tool cards
+   - Responsive grid system (col-md-6, col-lg-4)
+   - Hover effects on tool cards
+   - Loading states with spinner animations
+*/
+
+/* ==========================================
+   NAVIGATION & LAYOUT
+   ========================================== */
+
+/* Navigation Components
+   - Responsive navbar with mobile menu
+   - Active state highlighting for current page
+   - Smooth transitions between pages
+   - Consistent spacing and typography
+*/
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+
+/* Media Queries:
+   - Mobile: < 768px (col-12)
+   - Tablet: 768px - 992px (col-md-6)
+   - Desktop: > 992px (col-lg-4)
+   - Large Desktop: > 1200px (col-xl-3)
+*/
+
+/* ==========================================
+   ACCESSIBILITY
+   ========================================== */
+
+/* Color Contrast:
+   - WCAG 2.1 AA compliant
+   - High contrast ratios for text
+   - Focus indicators for keyboard navigation
+   - Semantic HTML for screen readers
+*/
