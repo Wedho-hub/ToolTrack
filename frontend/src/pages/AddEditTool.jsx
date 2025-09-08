@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toolsAPI } from '../../api';
 import ToolForm from '../components/ToolForm';
+import { useAuth } from '../contexts/AuthContext';
 
 const AddEditTool = () => {
   const { id } = useParams();
@@ -9,6 +10,14 @@ const AddEditTool = () => {
   const [tool, setTool] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+    const { user } = useAuth();
+  
+    // Prevent non-admins from accessing this page
+    useEffect(() => {
+      if (user && user.role !== 'admin') {
+        navigate('/dashboard');
+      }
+    }, [user, navigate]);
 
   useEffect(() => {
     if (id) {
@@ -38,7 +47,11 @@ const AddEditTool = () => {
         // Create new tool
         await toolsAPI.create(data);
       }
-      navigate('/manage-tools');
+        if (user?.role === 'admin') {
+          navigate('/manage-tools');
+        } else {
+          navigate('/dashboard');
+        }
     } catch (error) {
       console.error('Error saving tool:', error);
       setError(error.response?.data?.message || 'Failed to save tool');
@@ -75,9 +88,9 @@ const AddEditTool = () => {
       
       <div className="row mt-3">
         <div className="col-12">
-          <button 
-            className="btn btn-secondary" 
-            onClick={() => navigate('/manage-tools')}
+            <button 
+              className="btn btn-secondary" 
+              onClick={() => user?.role === 'admin' ? navigate('/manage-tools') : navigate('/dashboard')}
           >
             Back to Manage Tools
           </button>

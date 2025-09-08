@@ -42,7 +42,6 @@ const Header = ({ toggleSidebar }) => {
               </div>
               <span className="d-none d-md-inline">{user?.name}</span>
             </button>
-            
             <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
               <li>
                 <div className="dropdown-item-text">
@@ -55,6 +54,12 @@ const Header = ({ toggleSidebar }) => {
                 <button className="dropdown-item" onClick={() => navigate('/dashboard')}>
                   <i className="bi bi-speedometer2 me-2"></i>
                   Dashboard
+                </button>
+              </li>
+              <li>
+                <button className="dropdown-item" onClick={() => navigate('/view-tools')}>
+                  <i className="bi bi-grid me-2"></i>
+                  View All Tools
                 </button>
               </li>
               <li>

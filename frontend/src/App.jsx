@@ -7,6 +7,8 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ManageTools from './pages/ManageTools';
 import AddEditTool from './pages/AddEditTool';
+import ViewTools from './pages/ViewTools';
+import Welcome from './pages/Welcome';
 import './App.css';
 
 function App() {
@@ -20,6 +22,16 @@ function App() {
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/view-tools" element={
+              <ProtectedRoute>
+                <ViewTools />
+              </ProtectedRoute>
+            } />
+            <Route path="/add-tool" element={
+              <ProtectedRoute requiredRole="admin">
+                <AddEditTool />
               </ProtectedRoute>
             } />
             <Route path="/manage-tools" element={
@@ -37,11 +49,7 @@ function App() {
                 <AddEditTool />
               </ProtectedRoute>
             } />
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
+            <Route path="/" element={<Welcome />} />
           </Routes>
         </div>
       </Router>

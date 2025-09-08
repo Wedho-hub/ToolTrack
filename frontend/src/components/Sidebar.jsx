@@ -11,10 +11,15 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     return location.pathname === path;
   };
 
+  // Navigation items for all users
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: 'speedometer2' },
-    { path: '/manage-tools', label: 'Manage Tools', icon: 'gear' },
-    { path: '/add-tool', label: 'Add Tool', icon: 'plus-circle' },
+    { path: '/view-tools', label: 'View All Tools', icon: 'grid' },
+  { path: '/manage-tools', label: 'Manage Tools', icon: 'gear', admin: true },
+  { path: '/add-tool', label: 'Add Tool', icon: 'plus-circle', admin: true },
+    { path: '/dashboard', label: 'View My Tools', icon: 'box', admin: true },
+    { path: '/login', label: 'Login', icon: 'box-arrow-in-right', guest: true },
+    { path: '/register', label: 'Register', icon: 'person-plus', guest: true },
   ];
 
   return (
@@ -39,19 +44,24 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         </div>
         <div className="offcanvas-body">
           <nav className="nav flex-column">
-            {navItems.map((item) => (
-              <button
-                key={item.path}
-                className={`nav-link d-flex align-items-center mb-2 ${isActive(item.path) ? 'active' : ''}`}
-                onClick={() => {
-                  navigate(item.path);
-                  toggleSidebar();
-                }}
-              >
-                <i className={`bi bi-${item.icon} me-3`}></i>
-                {item.label}
-              </button>
-            ))}
+            {navItems.map((item) => {
+              // Show admin-only links if user is admin, guest links if not logged in
+              if (item.admin && user?.role !== 'admin') return null;
+              if (item.guest && user) return null;
+              return (
+                <button
+                  key={item.path}
+                  className={`nav-link d-flex align-items-center mb-2 ${isActive(item.path) ? 'active' : ''}`}
+                  onClick={() => {
+                    navigate(item.path);
+                    toggleSidebar();
+                  }}
+                >
+                  <i className={`bi bi-${item.icon} me-3`}></i>
+                  {item.label}
+                </button>
+              );
+            })}
           </nav>
         </div>
       </div>
@@ -65,17 +75,21 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           </div>
           
           <nav className="nav flex-column">
-            {navItems.map((item) => (
-              <button
-                key={item.path}
-                className={`nav-link d-flex align-items-center mb-2 ${isActive(item.path) ? 'active' : ''}`}
-                onClick={() => navigate(item.path)}
-                title={!isOpen ? item.label : ''}
-              >
-                <i className={`bi bi-${item.icon} ${isOpen ? 'me-3' : ''} fs-5`}></i>
-                {isOpen && item.label}
-              </button>
-            ))}
+            {navItems.map((item) => {
+              if (item.admin && user?.role !== 'admin') return null;
+              if (item.guest && user) return null;
+              return (
+                <button
+                  key={item.path}
+                  className={`nav-link d-flex align-items-center mb-2 ${isActive(item.path) ? 'active' : ''}`}
+                  onClick={() => navigate(item.path)}
+                  title={!isOpen ? item.label : ''}
+                >
+                  <i className={`bi bi-${item.icon} ${isOpen ? 'me-3' : ''} fs-5`}></i>
+                  {isOpen && item.label}
+                </button>
+              );
+            })}
           </nav>
 
           {isOpen && (
