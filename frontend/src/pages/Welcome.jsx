@@ -11,7 +11,7 @@ const Welcome = () => {
       <p className="lead">Easily manage, assign, and track your organization's tools.<br />
       Use the quick links below to get started as an admin or worker.</p>
       <img 
-        src="/public/toolTrackIcon.png" 
+        src="/toolTrackIcon.png"
         alt="ToolTrack Logo" 
         style={{ 
           width: 120, 
