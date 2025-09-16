@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { toolsAPI, usersAPI } from '../../api';
 
 const ManageTools = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const [tools, setTools] = useState([]);
   const [loadingTools, setLoadingTools] = useState(true);
   const [users, setUsers] = useState([]);
@@ -108,7 +108,7 @@ const ManageTools = () => {
               <i className="bi bi-grid me-1"></i> View All Tools
             </button>
             {/* Removed duplicate Add Tool button */}
-            <button className="btn btn-outline-danger" onClick={() => { localStorage.clear(); navigate('/login'); }}>
+            <button className="btn btn-outline-danger" onClick={() => { logout(); navigate('/login'); }}>
               <i className="bi bi-box-arrow-right me-1"></i> Logout
             </button>
           </div>

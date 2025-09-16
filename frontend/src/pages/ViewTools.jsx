@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { toolsAPI } from '../../api';
+import { useAuth } from '../contexts/AuthContext';
 
 const ViewTools = () => {
   const [tools, setTools] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { logout } = useAuth();
 
   useEffect(() => {
     const fetchTools = async () => {
@@ -30,7 +32,7 @@ const ViewTools = () => {
           <button className="btn btn-outline-secondary" onClick={() => window.location.href = '/manage-tools'}>
             <i className="bi bi-gear me-1"></i> Manage Tools
           </button>
-          <button className="btn btn-outline-danger" onClick={() => { localStorage.clear(); window.location.href = '/login'; }}>
+          <button className="btn btn-outline-danger" onClick={() => { logout(); window.location.href = '/login'; }}>
             <i className="bi bi-box-arrow-right me-1"></i> Logout
           </button>
         </div>

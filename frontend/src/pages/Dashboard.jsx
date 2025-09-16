@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const Dashboard = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const [tools, setTools] = useState([]);
   const [loadingTools, setLoadingTools] = useState(true);
   const navigate = useNavigate();
@@ -60,7 +60,7 @@ const Dashboard = () => {
               <i className="bi bi-gear me-1"></i> Manage Tools
             </button>
           )}
-          <button className="btn btn-outline-danger" onClick={() => { localStorage.clear(); navigate('/login'); }}>
+          <button className="btn btn-outline-danger" onClick={() => { logout(); navigate('/login'); }}>
             <i className="bi bi-box-arrow-right me-1"></i> Logout
           </button>
         </div>

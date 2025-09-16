@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const Welcome = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   return (
     <div className="container mt-5 text-center">
@@ -29,7 +29,7 @@ const Welcome = () => {
         {!user && <button className="btn btn-outline-primary" onClick={() => navigate('/register')}>Register</button>}
         <button className="btn btn-success" onClick={() => navigate('/view-tools')}>View All Tools</button>
         {user && <button className="btn btn-info" onClick={() => navigate('/dashboard')}>Go to Dashboard</button>}
-        {user && <button className="btn btn-danger" onClick={() => { localStorage.clear(); navigate('/login'); }}>Logout</button>}
+  {user && <button className="btn btn-danger" onClick={() => { logout(); navigate('/login'); }}>Logout</button>}
       </div>
     </div>
   );
