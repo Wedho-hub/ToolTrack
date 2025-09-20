@@ -17,11 +17,25 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
-// Middleware
+// --- CORS setup ---
+const allowedOrigins = [
+  'http://localhost:5173',                     // Local dev (Vite)
+  process.env.FRONTEND_URL || ''               // Netlify (production)
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like Postman) or allowed origins
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
+
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

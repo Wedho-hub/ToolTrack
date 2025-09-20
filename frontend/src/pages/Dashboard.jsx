@@ -43,18 +43,23 @@ const Dashboard = () => {
     return <div className="container mt-5"><p>Loading...</p></div>;
   }
 
+  // Stats summary
+  const totalTools = tools.length;
+  const inUse = tools.filter(t => t.status === 'in-use').length;
+  const available = tools.filter(t => t.status === 'available').length;
+
   return (
-    <div className="container mt-5">
-      <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div className="container py-4">
+      {/* Header and Navigation */}
+      <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 p-3 bg-white rounded shadow-sm">
         <div>
-          <h1 className="mb-2">Dashboard</h1>
-          <p className="mb-0">Welcome, {user?.name}!</p>
+          <h1 className="mb-1 fw-bold">Dashboard</h1>
+          <div className="text-muted">Welcome, {user?.name}!</div>
         </div>
         <div className="d-flex flex-wrap gap-2">
           <button className="btn btn-outline-primary" onClick={() => navigate('/view-tools')}>
             <i className="bi bi-grid me-1"></i> View All Tools
           </button>
-          {/* Only show Manage Tools for admin users */}
           {user?.role === 'admin' && (
             <button className="btn btn-outline-secondary" onClick={() => navigate('/manage-tools')}>
               <i className="bi bi-gear me-1"></i> Manage Tools
@@ -65,50 +70,77 @@ const Dashboard = () => {
           </button>
         </div>
       </div>
-      <div className="row">
-        <div className="col-12">
-          <h2>Your Tools</h2>
-          {tools.length === 0 ? (
-            <p>No tools assigned to you yet.</p>
-          ) : (
-            <div className="row">
-              {tools.map((tool) => (
-                <div key={tool._id} className="col-md-6 mb-4">
-                  <div className="card">
-                    <div className="card-body">
-                      <div className="d-flex align-items-center mb-2">
-                        {tool.imageUrl && (
-                          <img src={tool.imageUrl} alt={tool.name} style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 8, marginRight: 12 }} onError={e => { e.currentTarget.style.display = 'none'; }} />
-                        )}
-                        <h5 className="card-title mb-0">{tool.name}</h5>
-                      </div>
-                      <p className="card-text">{tool.description}</p>
-                      <p className="card-text">
-                        <small className="text-muted">
-                          Category: {tool.category}
-                        </small>
-                      </p>
-                      <p className="card-text">
-                        <small className="text-muted">
-                          Status: {tool.status}
-                        </small>
-                      </p>
-                      {tool.status === 'in-use' && (
-                        <button 
-                          className="btn btn-sm btn-warning"
-                          onClick={() => handleReturn(tool._id)}
-                        >
-                          Return Tool
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+
+      {/* Stats Summary */}
+      <div className="row g-3 mb-4">
+        <div className="col-md-4">
+          <div className="card text-center border-0 shadow-sm h-100">
+            <div className="card-body py-4">
+              <div className="fs-2 fw-bold text-primary">{totalTools}</div>
+              <div className="text-muted">Total Tools Assigned</div>
             </div>
-          )}
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="card text-center border-0 shadow-sm h-100">
+            <div className="card-body py-4">
+              <div className="fs-2 fw-bold text-success">{available}</div>
+              <div className="text-muted">Available</div>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="card text-center border-0 shadow-sm h-100">
+            <div className="card-body py-4">
+              <div className="fs-2 fw-bold text-warning">{inUse}</div>
+              <div className="text-muted">In Use</div>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Tools List */}
+      <div className="mb-3 d-flex align-items-center gap-2">
+        <h2 className="mb-0 fw-semibold">Your Tools</h2>
+        <span className="badge bg-light text-dark">{totalTools}</span>
+      </div>
+      {tools.length === 0 ? (
+        <div className="alert alert-warning">No tools assigned to you yet.</div>
+      ) : (
+        <div className="row g-4">
+          {tools.map((tool) => (
+            <div key={tool._id} className="col-md-6 col-lg-4">
+              <div className="card h-100 shadow-sm border-0">
+                <div className="card-body d-flex flex-column">
+                  <div className="d-flex align-items-center mb-3 gap-3">
+                    {tool.imageUrl && (
+                      <img src={tool.imageUrl} alt={tool.name} style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }} onError={e => { e.currentTarget.style.display = 'none'; }} />
+                    )}
+                    <div>
+                      <h5 className="card-title mb-1 fw-bold">{tool.name}</h5>
+                      <div className="text-muted small">{tool.category}</div>
+                    </div>
+                  </div>
+                  <div className="mb-2 flex-grow-1">
+                    <div className="mb-1 text-secondary">{tool.description}</div>
+                    <div className="d-flex flex-wrap gap-2">
+                      <span className={`badge px-3 py-2 ${tool.status === 'available' ? 'bg-success' : tool.status === 'in-use' ? 'bg-warning text-dark' : 'bg-secondary'}`}>Status: {tool.status}</span>
+                    </div>
+                  </div>
+                  {tool.status === 'in-use' && (
+                    <button 
+                      className="btn btn-sm btn-warning align-self-end mt-auto"
+                      onClick={() => handleReturn(tool._id)}
+                    >
+                      Return Tool
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
