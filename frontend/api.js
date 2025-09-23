@@ -6,6 +6,7 @@ const API = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // allow sending cookies if needed
 });
 
 // Request interceptor to add auth token
@@ -17,9 +18,7 @@ API.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Response interceptor for error handling
@@ -35,6 +34,8 @@ API.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// --- API calls ---
 
 // Auth API calls
 export const authAPI = {
