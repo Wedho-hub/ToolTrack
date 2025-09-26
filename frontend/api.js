@@ -1,8 +1,19 @@
 import axios from 'axios';
 
+// Determine the correct API URL based on environment
+const getApiUrl = () => {
+  // In development, always use localhost
+  if (import.meta.env.DEV || window.location.hostname === 'localhost') {
+    return 'http://localhost:5000/api';
+  }
+  
+  // In production, use the environment variable or fallback
+  return import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+};
+
 // Create axios instance with base configuration
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: getApiUrl(),
   headers: {
     'Content-Type': 'application/json',
   },

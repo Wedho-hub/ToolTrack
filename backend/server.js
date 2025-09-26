@@ -35,19 +35,39 @@ connectDB();
 // --- CORS setup ---
 const allowedOrigins = [
   'http://localhost:5173',                     // Local dev (Vite)
+  'http://localhost:3000',                     // Local dev (React)
   'https://tooltracking.netlify.app',          // Deployed frontend
   process.env.FRONTEND_URL || ''               // Optional: use ENV
 ];
 
+// Add any Netlify preview URLs if FRONTEND_URL contains netlify
+if (process.env.FRONTEND_URL && process.env.FRONTEND_URL.includes('netlify')) {
+  // Allow all netlify deploy previews for this app
+  const netlifyBase = process.env.FRONTEND_URL.replace(/https?:\/\//, '').split('.')[0];
+  allowedOrigins.push(`https://${netlifyBase}--*.netlify.app`);
+}
+
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like Postman) or allowed origins
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
+      // Allow requests with no origin (like Postman, mobile apps, etc.)
+      if (!origin) {
+        return callback(null, true);
       }
+
+      // Check exact matches first
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // Check for Netlify preview URLs (pattern matching)
+      if (origin && origin.includes('netlify.app')) {
+        return callback(null, true);
+      }
+
+      // Log rejected origins for debugging
+      console.warn(`🚫 CORS rejected origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
   })
@@ -88,6 +108,7 @@ const server = app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
   console.log(`🌐 API available at: http://localhost:${PORT}/api`);
   console.log(`🔍 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🔗 Allowed CORS origins:`, allowedOrigins);
 });
 
 // Handle server errors
