@@ -1,5 +1,23 @@
-# Modern JS Update Plan
+# ToolTrack Authentication Fix - TODO List
 
-- [x] Update frontend/src/contexts/AuthContext.jsx: Replace .then().catch() with async/await in useEffect
-- [x] Update frontend/src/pages/Dashboard.jsx: Replace import().then() with destructuring and direct await
-- [ ] Test frontend changes: Run dev server and verify auth and dashboard functionality
+## Issues Identified:
+- [x] Route import/export mismatch in authRoutes.js
+- [x] Missing environment variable validation
+- [x] Poor error handling for server startup
+- [x] Connection refused errors due to server not starting properly
+
+## Tasks to Complete:
+
+### Backend Fixes:
+- [x] Fix function name imports in backend/routes/authRoutes.js
+- [x] Add environment variable validation in backend/server.js
+- [x] Improve error handling and logging
+- [ ] Test backend server startup
+
+### Testing:
+- [ ] Start backend server
+- [ ] Test registration endpoint
+- [ ] Test login endpoint
+- [ ] Verify frontend-backend connection
+
+## Current Status: Backend fixes completed, ready for testing...

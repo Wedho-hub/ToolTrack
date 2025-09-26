@@ -1,7 +1,7 @@
 const express = require('express');
 const {
-  registerUser,
-  loginUser,
+  register,
+  login,
   getMe
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
@@ -11,12 +11,12 @@ const router = express.Router();
 // @route   POST /api/auth/register
 // @desc    Register new user
 // @access  Public
-router.post('/register', registerUser);
+router.post('/register', register);
 
 // @route   POST /api/auth/login
 // @desc    Login user
 // @access  Public
-router.post('/login', loginUser);
+router.post('/login', login);
 
 // @route   GET /api/auth/me
 // @desc    Get current logged-in user

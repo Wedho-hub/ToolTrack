@@ -11,6 +11,21 @@ const userRoutes = require('./routes/userRoutes');
 // Load environment variables
 dotenv.config();
 
+// Validate required environment variables
+const requiredEnvVars = ['MONGO_URI'];
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+
+if (missingEnvVars.length > 0) {
+  console.error('❌ Missing required environment variables:', missingEnvVars.join(', '));
+  console.error('Please check your .env file in the backend directory');
+  process.exit(1);
+}
+
+// Warn about missing JWT_SECRET
+if (!process.env.JWT_SECRET) {
+  console.warn('⚠️  JWT_SECRET not found in environment variables. Using default (not recommended for production)');
+}
+
 // Initialize express app
 const app = express();
 
@@ -68,6 +83,36 @@ app.use('*', (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+
+const server = app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`🌐 API available at: http://localhost:${PORT}/api`);
+  console.log(`🔍 Health check: http://localhost:${PORT}/api/health`);
+});
+
+// Handle server errors
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`❌ Port ${PORT} is already in use. Please try a different port or stop the existing process.`);
+  } else {
+    console.error('❌ Server error:', error.message);
+  }
+  process.exit(1);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('🔄 SIGTERM received. Shutting down gracefully...');
+  server.close(() => {
+    console.log('✅ Server closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('🔄 SIGINT received. Shutting down gracefully...');
+  server.close(() => {
+    console.log('✅ Server closed');
+    process.exit(0);
+  });
 });
