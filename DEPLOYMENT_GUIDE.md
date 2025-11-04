@@ -58,6 +58,13 @@ Try registering and logging in through your deployed frontend.
 
 ## Common Issues & Solutions
 
+### Issue: "Route not found" (404) Error
+- **Cause**: Missing `/api` prefix or backend not deployed properly
+- **Solution**: 
+  1. Test health check: `https://your-render-url.onrender.com/api/health`
+  2. Verify VITE_API_URL includes `/api` at the end
+  3. Check Render logs for startup errors
+
 ### Issue: "Connection Refused" Error
 - **Cause**: Backend not running or wrong API URL
 - **Solution**: Verify Render deployment is active and VITE_API_URL is correct
@@ -74,12 +81,36 @@ Try registering and logging in through your deployed frontend.
 - **Cause**: MONGO_URI not set or incorrect
 - **Solution**: Verify MongoDB connection string in Render environment variables
 
+### Issue: Frontend Build Fails
+- **Cause**: Missing environment variables during build
+- **Solution**: Set VITE_API_URL in Netlify environment variables or use .env.production file
+
 ## URLs to Replace
 
-1. **In frontend/.env**: Replace `your-render-app-name` with your actual Render app name
-2. **In Render env vars**: Replace `your-netlify-app` with your actual Netlify app name
+1. **In frontend/.env.production**: Replace `your-render-app-name` with your actual Render app name
+2. **In Render env vars**: Replace `your-netlify-app` with your actual Netlify app name  
 3. **In MongoDB URI**: Replace with your actual MongoDB connection string
 4. **JWT_SECRET**: Generate a secure random string (at least 32 characters)
+
+## Quick Troubleshooting Steps
+
+1. **Test Backend Health Check**:
+   ```
+   curl https://your-render-app.onrender.com/api/health
+   ```
+   Should return: `{"status":"OK","message":"Server is running"}`
+
+2. **Test Registration Endpoint**:
+   ```
+   curl -X POST https://your-render-app.onrender.com/api/auth/register \
+   -H "Content-Type: application/json" \
+   -d '{"name":"Test","email":"test@test.com","password":"test123"}'
+   ```
+
+3. **Check Frontend API URL**:
+   - Open browser dev tools on your Netlify site
+   - Check Network tab to see what URL the frontend is calling
+   - Verify it includes `/api` at the end
 
 ## Verification Checklist
 

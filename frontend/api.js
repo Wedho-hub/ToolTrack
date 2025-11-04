@@ -2,13 +2,23 @@ import axios from 'axios';
 
 // Determine the correct API URL based on environment
 const getApiUrl = () => {
-  // In development, always use localhost
+  // In development, always use localhost (keeps dev predictable)
   if (import.meta.env.DEV || window.location.hostname === 'localhost') {
     return 'http://localhost:5000/api';
   }
-  
-  // In production, use the environment variable or fallback
-  return import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+  // In production, prefer the environment variable. Normalize so it ends with '/api'
+  const raw = import.meta.env.VITE_API_URL || '';
+  if (!raw) {
+    // eslint-disable-next-line no-console
+    console.warn('[api] VITE_API_URL is not set. Falling back to http://localhost:5000/api — update Netlify/hosting env var to your backend URL');
+    return 'http://localhost:5000/api';
+  }
+
+  // Normalize: ensure no trailing slash and append /api if missing
+  let normalized = raw.replace(/\/+$/, '');
+  if (!normalized.endsWith('/api')) normalized = `${normalized}/api`;
+  return normalized;
 };
 
 // Create axios instance with base configuration
