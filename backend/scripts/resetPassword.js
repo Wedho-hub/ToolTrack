@@ -7,13 +7,19 @@
  * It safely hashes the new password with bcrypt and updates the user document.
  */
 
-require('dotenv').config({ path: require('path').resolve(__dirname, '..', '.env') });
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const path = require('path');
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
 // Adjust path to model relative to this script
-const User = require(path.resolve(__dirname, '..', 'models', 'User'));
+import User from '../models/User.js';
 
 async function main() {
   const args = process.argv.slice(2);

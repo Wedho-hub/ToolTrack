@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const toolSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -13,4 +13,4 @@ const toolSchema = new mongoose.Schema({
   assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }
 }, { timestamps: true })
 
-module.exports = mongoose.model('Tool', toolSchema)
+export default mongoose.model('Tool', toolSchema)

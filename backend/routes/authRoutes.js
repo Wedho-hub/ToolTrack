@@ -1,26 +1,22 @@
-const express = require('express');
-const {
-  register,
-  login,
-  getMe
-} = require('../controllers/authController');
-const { protect } = require('../middleware/authMiddleware');
+import express from 'express';
+import authController from '../controllers/authController.js';
+import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // @route   POST /api/auth/register
 // @desc    Register new user
 // @access  Public
-router.post('/register', register);
+router.post('/register', authController.register);
 
 // @route   POST /api/auth/login
 // @desc    Login user
 // @access  Public
-router.post('/login', login);
+router.post('/login', authController.login);
 
 // @route   GET /api/auth/me
 // @desc    Get current logged-in user
 // @access  Private
-router.get('/me', protect, getMe);
+router.get('/me', authMiddleware.protect, authController.getMe);
 
-module.exports = router;
+export default router;

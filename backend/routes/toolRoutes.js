@@ -1,29 +1,20 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const {
-  getTools,
-  getTool,
-  createTool,
-  updateTool,
-  deleteTool,
-  assignTool,
-  returnTool,
-  getMyTools
-} = require('../controllers/toolController');
-const { protect, authorize } = require('../middleware/authMiddleware');
+import toolController from '../controllers/toolController.js';
+import authMiddleware from '../middleware/authMiddleware.js';
 
 // Public routes (authenticated users)
-router.get('/', protect, getTools);
-router.get('/my-tools', protect, getMyTools);
-router.get('/:id', protect, getTool);
+router.get('/', authMiddleware.protect, toolController.getTools);
+router.get('/my-tools', authMiddleware.protect, toolController.getMyTools);
+router.get('/:id', authMiddleware.protect, toolController.getTool);
 
 // Admin only routes
-router.post('/', protect, authorize('admin'), createTool);
-router.put('/:id', protect, authorize('admin'), updateTool);
-router.delete('/:id', protect, authorize('admin'), deleteTool);
+router.post('/', authMiddleware.protect, authMiddleware.authorize('admin'), toolController.createTool);
+router.put('/:id', authMiddleware.protect, authMiddleware.authorize('admin'), toolController.updateTool);
+router.delete('/:id', authMiddleware.protect, authMiddleware.authorize('admin'), toolController.deleteTool);
 
 // Assignment routes
-router.post('/:id/assign', protect, authorize('admin'), assignTool);
-router.post('/:id/return', protect, returnTool);
+router.post('/:id/assign', authMiddleware.protect, authMiddleware.authorize('admin'), toolController.assignTool);
+router.post('/:id/return', authMiddleware.protect, toolController.returnTool);
 
-module.exports = router;
+export default router;

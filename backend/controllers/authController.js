@@ -1,5 +1,5 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
 /**
  * Generate JWT token
@@ -93,7 +93,7 @@ const getMe = async (req, res) => {
   }
 };
 
-module.exports = {
+export default {
   register,
   login,
   getMe,

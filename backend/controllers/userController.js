@@ -1,4 +1,4 @@
-const User = require('../models/User');
+import User from '../models/User.js';
 
 /**
  * @desc    Get all users
@@ -77,7 +77,7 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = {
+export default {
   getUsers,
   getUserById,
   updateUser,

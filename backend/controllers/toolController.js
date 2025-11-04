@@ -1,5 +1,5 @@
-const Tool = require('../models/Tool');
-const User = require('../models/User');
+import Tool from '../models/Tool.js';
+import User from '../models/User.js';
 
 /**
  * @desc    Get all tools
@@ -204,7 +204,7 @@ const returnTool = async (req, res) => {
   }
 };
 
-module.exports = {
+export default {
   getTools,
   getTool,
   getMyTools,
