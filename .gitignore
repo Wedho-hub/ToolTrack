@@ -171,3 +171,14 @@ dist/
 uploads/
 temp/
 tmp/
+
+# Monorepo structure (ToolTrack)
+backend/node_modules/
+backend/.env
+backend/coverage/
+frontend/node_modules/
+frontend/.env
+frontend/coverage/
+frontend/dist/
+frontend/build/
+frontend/.vite/
