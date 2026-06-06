@@ -90,21 +90,30 @@ const Welcome = () => {
       </nav>
 
       {/* ── Hero ── */}
-      <section style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 60%, #3b82f6 100%)', padding: '6rem 0 5rem' }}>
-        <div className="container text-center text-white">
-          <div className="mb-3">
+      <section style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 60%, #3b82f6 100%)', padding: '6rem 0 5rem', position: 'relative', overflow: 'hidden' }}>
+
+        {/* Floating tool icon decorations */}
+        <i className="bi bi-wrench-adjustable float-a position-absolute" style={{ top: '12%', left: '4%', fontSize: '2.5rem', opacity: 0.12, color: '#fff' }}></i>
+        <i className="bi bi-lightning-charge float-b position-absolute" style={{ top: '25%', right: '6%', fontSize: '2rem', opacity: 0.1, color: '#93c5fd' }}></i>
+        <i className="bi bi-shield-check float-c position-absolute" style={{ bottom: '20%', left: '7%', fontSize: '2rem', opacity: 0.1, color: '#bfdbfe' }}></i>
+        <i className="bi bi-rulers float-a position-absolute" style={{ bottom: '15%', right: '5%', fontSize: '1.8rem', opacity: 0.12, color: '#fff', animationDelay: '1.2s' }}></i>
+        <i className="bi bi-tools float-b position-absolute" style={{ top: '55%', left: '2%', fontSize: '1.5rem', opacity: 0.08, color: '#fff', animationDelay: '0.8s' }}></i>
+        <i className="bi bi-box-seam float-c position-absolute" style={{ top: '8%', right: '18%', fontSize: '1.4rem', opacity: 0.09, color: '#93c5fd', animationDelay: '2s' }}></i>
+
+        <div className="container text-center text-white" style={{ position: 'relative', zIndex: 1 }}>
+          <div className="mb-3 slide-in-left">
             <span className="badge rounded-pill px-3 py-2" style={{ background: 'rgba(255,255,255,0.15)', fontSize: '0.85rem' }}>
               <i className="bi bi-lightning-charge-fill me-1"></i>Full-Stack MERN Application
             </span>
           </div>
-          <h1 className="fw-black mb-4" style={{ fontSize: 'clamp(2.2rem, 5vw, 3.75rem)', lineHeight: 1.1, letterSpacing: '-1px' }}>
+          <h1 className="fw-black mb-4 slide-in-left" style={{ fontSize: 'clamp(2.2rem, 5vw, 3.75rem)', lineHeight: 1.1, letterSpacing: '-1px', animationDelay: '0.1s' }}>
             Tool Management,<br />
             <span style={{ color: '#93c5fd' }}>Simplified.</span>
           </h1>
-          <p className="mb-5 mx-auto opacity-90" style={{ fontSize: '1.2rem', maxWidth: 580, lineHeight: 1.7 }}>
+          <p className="mb-5 mx-auto opacity-90 fade-in-up" style={{ fontSize: '1.2rem', maxWidth: 580, lineHeight: 1.7, animationDelay: '0.25s' }}>
             ToolTrack gives your organization a single source of truth for every tool — who has it, where it is, and whether it's ready to use.
           </p>
-          <div className="d-flex flex-wrap justify-content-center gap-3">
+          <div className="d-flex flex-wrap justify-content-center gap-3 fade-in-up" style={{ animationDelay: '0.4s' }}>
             {user ? (
               <button className="btn btn-light btn-lg fw-semibold px-5" onClick={() => navigate('/dashboard')}>
                 <i className="bi bi-speedometer2 me-2"></i>Go to Dashboard
@@ -123,7 +132,7 @@ const Welcome = () => {
           </div>
 
           {/* Hero visual */}
-          <div className="mt-5 pt-2">
+          <div className="mt-5 pt-2 slide-in-right" style={{ animationDelay: '0.3s' }}>
             <div className="card border-0 shadow-xl mx-auto text-start" style={{ maxWidth: 680, borderRadius: '1rem', overflow: 'hidden' }}>
               <div style={{ background: '#1e293b', padding: '0.6rem 1rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <span style={{ width: 12, height: 12, background: '#ef4444', borderRadius: '50%', display: 'inline-block' }}></span>
@@ -189,11 +198,11 @@ const Welcome = () => {
             </p>
           </div>
           <div className="row g-4">
-            {features.map(({ icon, title, desc, color, bg }) => (
-              <div key={title} className="col-md-6 col-lg-4">
+            {features.map(({ icon, title, desc, color, bg }, i) => (
+              <div key={title} className={`col-md-6 col-lg-4 fade-in-up stagger-${i + 1}`}>
                 <div className="card border-0 shadow-sm h-100 hover-lift" style={{ borderRadius: '1rem' }}>
                   <div className="card-body p-4">
-                    <div className="d-inline-flex align-items-center justify-content-center rounded-3 mb-3" style={{ width: 48, height: 48, background: bg }}>
+                    <div className="d-inline-flex align-items-center justify-content-center rounded-3 mb-3" style={{ width: 52, height: 52, background: bg }}>
                       <i className={`bi ${icon} fs-4`} style={{ color }}></i>
                     </div>
                     <h5 className="fw-bold mb-2">{title}</h5>

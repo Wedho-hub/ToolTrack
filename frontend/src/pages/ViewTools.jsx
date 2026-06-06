@@ -10,6 +10,14 @@ const statusColors = {
   damaged:          'bg-secondary',
 };
 
+const categoryConfig = {
+  'Hand Tools':       { icon: 'bi-wrench-adjustable', color: '#92400e', bg: '#fef3c7' },
+  'Power Tools':      { icon: 'bi-lightning-charge',  color: '#5b21b6', bg: '#ede9fe' },
+  'Measuring Tools':  { icon: 'bi-rulers',            color: '#0e7490', bg: '#cffafe' },
+  'Safety Equipment': { icon: 'bi-shield-check',      color: '#065f46', bg: '#d1fae5' },
+  'Other':            { icon: 'bi-box-seam',          color: '#3730a3', bg: '#e0e7ff' },
+};
+
 const ViewTools = () => {
   const [tools, setTools] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -139,59 +147,64 @@ const ViewTools = () => {
           </div>
         ) : (
           <div className="row g-3">
-            {filtered.map(tool => (
-              <div key={tool._id} className="col-md-6 col-lg-4">
-                <div className="card h-100 border-0 shadow-sm hover-lift">
-                  <div className="card-body">
-                    <div className="d-flex align-items-center gap-3 mb-3">
-                      {tool.imageUrl ? (
-                        <img
-                          src={tool.imageUrl}
-                          alt={tool.name}
-                          style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 12, flexShrink: 0 }}
-                          onError={e => { e.currentTarget.style.display = 'none'; }}
-                        />
-                      ) : (
-                        <div className="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: 64, height: 64, background: '#f1f5f9' }}>
-                          <i className="bi bi-tools fs-3 text-muted"></i>
+            {filtered.map((tool, idx) => {
+              const catCfg = categoryConfig[tool.category] || categoryConfig['Other'];
+              const stagger = `fade-in-up stagger-${Math.min(idx + 1, 8)}`;
+              return (
+                <div key={tool._id} className={`col-md-6 col-lg-4 ${stagger}`}>
+                  <div className="card h-100 border-0 shadow-sm hover-lift">
+                    <div className="card-body">
+                      <div className="d-flex align-items-center gap-3 mb-3">
+                        {tool.imageUrl ? (
+                          <img
+                            src={tool.imageUrl}
+                            alt={tool.name}
+                            style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 12, flexShrink: 0 }}
+                            onError={e => { e.currentTarget.style.display = 'none'; }}
+                          />
+                        ) : (
+                          <div className="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                            style={{ width: 64, height: 64, background: catCfg.bg }}>
+                            <i className={`bi ${catCfg.icon} fs-3`} style={{ color: catCfg.color }}></i>
+                          </div>
+                        )}
+                        <div className="flex-grow-1 min-w-0">
+                          <h6 className="fw-bold mb-0 text-truncate">{tool.name}</h6>
+                          <small className="text-muted">{tool.category}</small>
+                        </div>
+                      </div>
+
+                      {tool.description && (
+                        <p className="text-muted small mb-3" style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                          {tool.description}
+                        </p>
+                      )}
+
+                      <div className="d-flex flex-wrap gap-2 mb-2">
+                        <span className={`badge rounded-pill px-3 ${statusColors[tool.status] || 'bg-secondary'}`}>
+                          {tool.status}
+                        </span>
+                        <span className="badge bg-light text-dark rounded-pill px-3">
+                          {tool.availableQuantity}/{tool.totalQuantity} available
+                        </span>
+                      </div>
+
+                      {tool.assignedTo && (
+                        <div className="text-muted small mt-2">
+                          <i className="bi bi-person me-1"></i>
+                          Assigned to <strong>{tool.assignedTo.name}</strong>
                         </div>
                       )}
-                      <div className="flex-grow-1 min-w-0">
-                        <h6 className="fw-bold mb-0 text-truncate">{tool.name}</h6>
-                        <small className="text-muted">{tool.category}</small>
-                      </div>
+                      {tool.location && (
+                        <div className="text-muted small mt-1">
+                          <i className="bi bi-geo-alt me-1"></i>{tool.location}
+                        </div>
+                      )}
                     </div>
-
-                    {tool.description && (
-                      <p className="text-muted small mb-3" style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                        {tool.description}
-                      </p>
-                    )}
-
-                    <div className="d-flex flex-wrap gap-2 mb-2">
-                      <span className={`badge rounded-pill px-3 ${statusColors[tool.status] || 'bg-secondary'}`}>
-                        {tool.status}
-                      </span>
-                      <span className="badge bg-light text-dark rounded-pill px-3">
-                        {tool.availableQuantity}/{tool.totalQuantity} available
-                      </span>
-                    </div>
-
-                    {tool.assignedTo && (
-                      <div className="text-muted small mt-2">
-                        <i className="bi bi-person me-1"></i>
-                        Assigned to <strong>{tool.assignedTo.name}</strong>
-                      </div>
-                    )}
-                    {tool.location && (
-                      <div className="text-muted small mt-1">
-                        <i className="bi bi-geo-alt me-1"></i>{tool.location}
-                      </div>
-                    )}
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

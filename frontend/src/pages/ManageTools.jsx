@@ -193,19 +193,19 @@ const ManageTools = () => {
         {/* Stats row */}
         <div className="row g-3 mb-4">
           {[
-            { label: 'Total Tools',    value: stats.total,    icon: 'bi-box-seam',             color: 'text-primary', bg: '#dbeafe' },
-            { label: 'Available',      value: stats.available,icon: 'bi-check-circle',          color: 'text-success', bg: '#dcfce7' },
-            { label: 'In Use',         value: stats.inUse,    icon: 'bi-arrow-repeat',          color: 'text-warning', bg: '#fef9c3' },
-            { label: 'Pending Return', value: stats.pending,  icon: 'bi-hourglass-split',       color: 'text-info',    bg: '#cffafe' },
-          ].map(({ label, value, icon, color, bg }) => (
-            <div key={label} className="col-6 col-md-3">
+            { label: 'Total Tools',    value: stats.total,    icon: 'bi-box-seam',       color: 'text-primary', bg: '#dbeafe' },
+            { label: 'Available',      value: stats.available,icon: 'bi-check-circle',   color: 'text-success', bg: '#dcfce7' },
+            { label: 'In Use',         value: stats.inUse,    icon: 'bi-arrow-repeat',   color: 'text-warning', bg: '#fef9c3' },
+            { label: 'Pending Return', value: stats.pending,  icon: 'bi-hourglass-split',color: 'text-info',    bg: '#cffafe' },
+          ].map(({ label, value, icon, color, bg }, i) => (
+            <div key={label} className={`col-6 col-md-3 fade-in-up stagger-${i + 1}`}>
               <div className="card border-0 shadow-sm h-100">
                 <div className="card-body d-flex align-items-center gap-3 py-3">
                   <div className="rounded-3 p-2" style={{ background: bg }}>
                     <i className={`bi ${icon} fs-5 ${color}`}></i>
                   </div>
                   <div>
-                    <div className={`fw-bold fs-4 ${color}`}>{value}</div>
+                    <div className={`fw-bold fs-4 stat-pop ${color}`}>{value}</div>
                     <div className="text-muted" style={{ fontSize: '0.8rem' }}>{label}</div>
                   </div>
                 </div>
@@ -222,7 +222,7 @@ const ManageTools = () => {
               <i className="bi bi-hourglass-split fs-5 text-white"></i>
               <h5 className="mb-0 fw-bold text-white">
                 Pending Returns
-                <span className="badge bg-white text-info ms-2">{pendingReturns.length}</span>
+                <span className="badge bg-white text-info ms-2 pulse-ring">{pendingReturns.length}</span>
               </h5>
               <div className="ms-auto text-white opacity-75 small">
                 Action required — verify physical receipt before accepting

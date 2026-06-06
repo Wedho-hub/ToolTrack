@@ -19,6 +19,14 @@ const statusConfig = {
   damaged:         { cls: 'bg-secondary',           label: 'Damaged' },
 };
 
+const categoryConfig = {
+  'Hand Tools':       { icon: 'bi-wrench-adjustable', color: '#92400e', bg: '#fef3c7' },
+  'Power Tools':      { icon: 'bi-lightning-charge',  color: '#5b21b6', bg: '#ede9fe' },
+  'Measuring Tools':  { icon: 'bi-rulers',            color: '#0e7490', bg: '#cffafe' },
+  'Safety Equipment': { icon: 'bi-shield-check',      color: '#065f46', bg: '#d1fae5' },
+  'Other':            { icon: 'bi-box-seam',          color: '#3730a3', bg: '#e0e7ff' },
+};
+
 const Dashboard = () => {
   const { user, loading } = useAuth();
   const [tools, setTools] = useState([]);
@@ -111,15 +119,15 @@ const Dashboard = () => {
             { label: 'In Use',          value: inUse,          icon: 'bi-arrow-repeat',   color: 'text-warning', bg: '#fef9c3' },
             { label: 'Available',       value: available,      icon: 'bi-check-circle',   color: 'text-success', bg: '#dcfce7' },
             { label: 'Pending Return',  value: pendingReturn,  icon: 'bi-hourglass-split',color: 'text-info',    bg: '#cffafe' },
-          ].map(({ label, value, icon, color, bg }) => (
-            <div key={label} className="col-6 col-md-3">
+          ].map(({ label, value, icon, color, bg }, i) => (
+            <div key={label} className={`col-6 col-md-3 fade-in-up stagger-${i + 1}`}>
               <div className="card border-0 shadow-sm h-100">
                 <div className="card-body d-flex align-items-center gap-3 py-3">
                   <div className="rounded-3 p-3" style={{ background: bg }}>
                     <i className={`bi ${icon} fs-4 ${color}`}></i>
                   </div>
                   <div>
-                    <div className={`fw-bold fs-3 ${color}`}>{value}</div>
+                    <div className={`fw-bold fs-3 stat-pop ${color}`}>{value}</div>
                     <div className="text-muted small">{label}</div>
                   </div>
                 </div>
@@ -161,13 +169,14 @@ const Dashboard = () => {
           </div>
         ) : (
           <div className="row g-3">
-            {tools.map((tool) => {
+            {tools.map((tool, idx) => {
               const sc = statusConfig[tool.status] || { cls: 'bg-secondary', label: tool.status };
               const isPendingReturn = tool.status === 'pending-return';
               const isInUse = tool.status === 'in-use';
+              const catCfg = categoryConfig[tool.category] || categoryConfig['Other'];
 
               return (
-                <div key={tool._id} className="col-md-6 col-lg-4">
+                <div key={tool._id} className={`col-md-6 col-lg-4 fade-in-up stagger-${Math.min(idx + 1, 8)}`}>
                   <div className={`card h-100 border-0 shadow-sm hover-lift ${isPendingReturn ? 'border border-info border-opacity-50' : ''}`}>
                     <div className="card-body d-flex flex-column">
 
@@ -179,8 +188,8 @@ const Dashboard = () => {
                             onError={e => { e.currentTarget.style.display = 'none'; }} />
                         ) : (
                           <div className="rounded-3 d-flex align-items-center justify-content-center"
-                            style={{ width: 56, height: 56, background: '#f1f5f9', flexShrink: 0 }}>
-                            <i className="bi bi-tools fs-4 text-muted"></i>
+                            style={{ width: 56, height: 56, background: catCfg.bg, flexShrink: 0 }}>
+                            <i className={`bi ${catCfg.icon} fs-4`} style={{ color: catCfg.color }}></i>
                           </div>
                         )}
                         <div className="flex-grow-1 min-w-0">
