@@ -1,123 +1,189 @@
-# Production Deployment Guide - Render + Netlify
+# ToolTrack — Production Deployment Guide
 
-## Issues Fixed:
-✅ Route import/export mismatch in auth routes
-✅ Environment variable validation
-✅ CORS configuration for production
-✅ Frontend API URL configuration
+**Live URLs:**
+- Frontend: https://tooltracking.netlify.app
+- Backend API: https://tooltrack.onrender.com
+- Health check: https://tooltrack.onrender.com/api/health
 
-## Backend Deployment (Render)
+---
 
-### 1. Environment Variables on Render
-Set these environment variables in your Render dashboard:
+## Architecture
 
 ```
-MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/tooltrack
-JWT_SECRET=your-super-secret-jwt-key-here-make-it-long-and-random
-NODE_ENV=production
-FRONTEND_URL=https://your-netlify-app.netlify.app
+GitHub (main branch)
+    │
+    ├── push → Netlify auto-builds frontend  (frontend/dist → CDN)
+    └── push → Render auto-deploys backend   (Node.js service)
+                    │
+                    └── connects to MongoDB Atlas cluster
 ```
 
-### 2. Render Build Settings
-- **Build Command**: `npm install`
-- **Start Command**: `npm start`
-- **Node Version**: 18 or higher
+---
 
-## Frontend Deployment (Netlify)
+## Backend (Render)
 
-### 1. Update Frontend .env File
-Replace the placeholder in `frontend/.env` with your actual Render URL:
+### Environment variables
+
+Set these in your **Render dashboard → Service → Environment**:
+
+| Variable | Value |
+|---|---|
+| `MONGO_URI` | Your MongoDB Atlas connection string |
+| `JWT_SECRET` | A long random secret (64+ hex chars — see below) |
+| `FRONTEND_URL` | `https://tooltracking.netlify.app` |
+| `NODE_ENV` | `production` |
+
+**Generate a strong JWT secret:**
+```bash
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
+
+### Build settings (Render dashboard)
+
+| Setting | Value |
+|---|---|
+| Root directory | `backend` |
+| Build command | `npm install` |
+| Start command | `node server.js` |
+| Node version | 18 or higher |
+
+### Verify backend is running
+
+```bash
+curl https://tooltrack.onrender.com/api/health
+# Expected: {"status":"OK","message":"Server is running"}
+```
+
+> **Cold start note:** Render free tier services sleep after 15 minutes of inactivity. The first request after waking takes 30–60 seconds. The frontend shows a loading spinner during this time. Consider a free uptime monitor (e.g. UptimeRobot) to ping `/api/health` every 10 minutes.
+
+---
+
+## Frontend (Netlify)
+
+### Environment variables
+
+Set in **Netlify dashboard → Site → Environment variables**:
+
+| Variable | Value |
+|---|---|
+| `VITE_API_URL` | `https://tooltrack.onrender.com` |
+
+> Do not include `/api` at the end — `frontend/api.js` appends it automatically.
+
+### Build settings (Netlify dashboard)
+
+| Setting | Value |
+|---|---|
+| Base directory | `frontend` |
+| Build command | `npm run build` |
+| Publish directory | `frontend/dist` |
+| Node version | 18 |
+
+### SPA routing
+
+The file `frontend/public/_redirects` is committed to the repo:
 
 ```
-VITE_API_URL=https://your-render-app-name.onrender.com/api
+/*  /index.html  200
 ```
 
-### 2. Netlify Environment Variables
-In your Netlify dashboard, set:
+This tells Netlify to serve the React app for all routes, preventing 404s on page refresh. **Do not delete this file.**
+
+### Manual build and deploy
+
+If auto-deploy is not connected:
+
+```bash
+cd frontend
+npm run build         # outputs to frontend/dist/
+# Drag and drop frontend/dist/ into Netlify dashboard, or:
+npx netlify deploy --prod --dir=dist
+```
+
+---
+
+## Database (MongoDB Atlas)
+
+### Connection string format
 
 ```
-VITE_API_URL=https://your-render-app-name.onrender.com/api
+mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<dbname>?retryWrites=true&w=majority
 ```
 
-### 3. Netlify Build Settings
-- **Build Command**: `npm run build`
-- **Publish Directory**: `dist`
-- **Node Version**: 18 or higher
+Replace `<username>`, `<password>`, `<cluster>`, and `<dbname>` with your Atlas values. The database name (`<dbname>`) can be `tooltrack` — MongoDB creates it on first write.
 
-## Testing Your Deployment
+### Network access
 
-### 1. Test Backend Health Check
-Visit: `https://your-render-app-name.onrender.com/api/health`
-Should return: `{"status":"OK","message":"Server is running"}`
+In Atlas → **Network Access**, ensure your Render server's IP is whitelisted. For Render free tier (dynamic IPs), allow `0.0.0.0/0` (all IPs) — acceptable for non-sensitive data; restrict to a static IP if you upgrade.
 
-### 2. Test CORS
-Check browser console for CORS errors when accessing your Netlify frontend.
+### Free tier limits (M0)
 
-### 3. Test Authentication
-Try registering and logging in through your deployed frontend.
+- 512 MB storage
+- Shared CPU/RAM
+- No dedicated ops advisors
+- Sufficient for hundreds of tools and users
+
+---
+
+## Git → CI/CD Flow
+
+Both Netlify and Render watch the `main` branch on GitHub. A `git push origin main` triggers:
+
+1. Netlify: runs `npm run build` in `frontend/`, deploys `dist/`
+2. Render: pulls `backend/`, runs `npm install`, restarts the service
+
+No manual steps needed after initial setup.
+
+---
 
 ## Common Issues & Solutions
 
-### Issue: "Route not found" (404) Error
-- **Cause**: Missing `/api` prefix or backend not deployed properly
-- **Solution**: 
-  1. Test health check: `https://your-render-url.onrender.com/api/health`
-  2. Verify VITE_API_URL includes `/api` at the end
-  3. Check Render logs for startup errors
+| Symptom | Cause | Fix |
+|---|---|---|
+| All API calls return 404 | Wrong `VITE_API_URL` | Check Netlify env var — must be `https://tooltrack.onrender.com` (no trailing `/api`) |
+| CORS error in browser console | `FRONTEND_URL` not set on Render | Add `FRONTEND_URL=https://tooltracking.netlify.app` in Render environment |
+| Login fails in production but works locally | `JWT_SECRET` mismatch | Make sure Render's `JWT_SECRET` matches what tokens were signed with |
+| Page refresh returns 404 on Netlify | Missing `_redirects` | Confirm `frontend/public/_redirects` exists with `/* /index.html 200` |
+| Backend takes 30–60s to respond | Render cold start | Expected on free tier — add uptime monitor to keep it warm |
+| "Cannot connect to MongoDB" in Render logs | IP not whitelisted in Atlas | Set Atlas Network Access to `0.0.0.0/0` or whitelist Render IPs |
+| Frontend build fails on Netlify | Missing env var | Add `VITE_API_URL` to Netlify environment variables |
+| JWT token invalid after new deploy | `JWT_SECRET` changed | Changing the secret invalidates all existing tokens — users must log in again |
 
-### Issue: "Connection Refused" Error
-- **Cause**: Backend not running or wrong API URL
-- **Solution**: Verify Render deployment is active and VITE_API_URL is correct
+---
 
-### Issue: CORS Error
-- **Cause**: Frontend URL not in CORS allowlist
-- **Solution**: Set FRONTEND_URL environment variable on Render
+## Password Reset (CLI)
 
-### Issue: "Invalid JWT" Error
-- **Cause**: JWT_SECRET mismatch between environments
-- **Solution**: Ensure JWT_SECRET is set consistently
+There is no in-app password reset. To reset a user's password:
 
-### Issue: Database Connection Error
-- **Cause**: MONGO_URI not set or incorrect
-- **Solution**: Verify MongoDB connection string in Render environment variables
+```bash
+cd backend
+node scripts/resetPassword.js <email> <new-password>
+```
 
-### Issue: Frontend Build Fails
-- **Cause**: Missing environment variables during build
-- **Solution**: Set VITE_API_URL in Netlify environment variables or use .env.production file
+Run this from the Render Shell or locally with your production `MONGO_URI` set.
 
-## URLs to Replace
+---
 
-1. **In frontend/.env.production**: Replace `your-render-app-name` with your actual Render app name
-2. **In Render env vars**: Replace `your-netlify-app` with your actual Netlify app name  
-3. **In MongoDB URI**: Replace with your actual MongoDB connection string
-4. **JWT_SECRET**: Generate a secure random string (at least 32 characters)
+## Deployment Checklist
 
-## Quick Troubleshooting Steps
+### First-time setup
 
-1. **Test Backend Health Check**:
-   ```
-   curl https://your-render-app.onrender.com/api/health
-   ```
-   Should return: `{"status":"OK","message":"Server is running"}`
+- [ ] MongoDB Atlas cluster created and connection string copied
+- [ ] Atlas Network Access allows Render IPs (`0.0.0.0/0` for free tier)
+- [ ] Render service created, root directory set to `backend`
+- [ ] Render environment variables set: `MONGO_URI`, `JWT_SECRET`, `FRONTEND_URL`, `NODE_ENV`
+- [ ] Render start command: `node server.js`
+- [ ] Backend health check returns 200: `https://tooltrack.onrender.com/api/health`
+- [ ] Netlify site created, base directory set to `frontend`
+- [ ] Netlify environment variable set: `VITE_API_URL`
+- [ ] Netlify build succeeds and site is live
+- [ ] `frontend/public/_redirects` present in repo (committed)
+- [ ] Test registration and login on live site
+- [ ] Test adding a tool, assigning, requesting return, confirming return
 
-2. **Test Registration Endpoint**:
-   ```
-   curl -X POST https://your-render-app.onrender.com/api/auth/register \
-   -H "Content-Type: application/json" \
-   -d '{"name":"Test","email":"test@test.com","password":"test123"}'
-   ```
+### After each deployment
 
-3. **Check Frontend API URL**:
-   - Open browser dev tools on your Netlify site
-   - Check Network tab to see what URL the frontend is calling
-   - Verify it includes `/api` at the end
-
-## Verification Checklist
-
-- [ ] Backend deploys successfully on Render
-- [ ] Frontend builds and deploys on Netlify
-- [ ] Health check endpoint returns 200 OK
+- [ ] Health check passes
+- [ ] Can log in with existing credentials
 - [ ] No CORS errors in browser console
-- [ ] Registration works in production
-- [ ] Login works in production
-- [ ] JWT tokens are properly generated and validated
+- [ ] Return workflow functions end-to-end

@@ -2,7 +2,13 @@
 
 **ToolTrack** is a production-ready full-stack web application that gives organizations real-time control over their physical tool inventory. Admins manage and assign tools; workers see exactly what they've been issued and can return it with one click.
 
-Live demo: [tooltracking.netlify.app](https://tooltracking.netlify.app)
+Live demo: [tooltracking.netlify.app](https://tooltracking.netlify.app)  
+Backend API: [tooltrack.onrender.com](https://tooltrack.onrender.com/api/health)
+
+**Documentation:**
+- [User Guide](USER_GUIDE.md) — step-by-step guide for admins and workers
+- [Developer Guide](DEVELOPER_GUIDE.md) — architecture, API reference, extension guide
+- [Deployment Guide](DEPLOYMENT_GUIDE.md) — production deployment checklist
 
 ---
 
@@ -18,7 +24,8 @@ Most teams track tools on spreadsheets — or not at all. ToolTrack replaces tha
 |---|---|
 | **Inventory Management** | Add tools with name, category, condition, quantity, location, and image |
 | **Tool Assignment** | Assign tools to workers; availability counts update automatically |
-| **One-click Returns** | Workers return tools from their dashboard; status updates in real time |
+| **Verified Returns** | Workers submit a return request; admin physically inspects and confirms before the tool is released back to stock |
+| **Reject Return** | Admin can reject a return with a reason — tool stays assigned to the worker until physically received |
 | **Role-Based Access** | Admins have full CRUD control; workers see only their assigned tools |
 | **Search & Filter** | Filter by name, category, or status across the full inventory |
 | **JWT Authentication** | 30-day tokens, auto-logout on expiry, bcrypt-hashed passwords |
@@ -95,7 +102,8 @@ ToolTrack/
 |---|---|---|
 | View all tools | ✅ | ✅ |
 | View assigned tools | ✅ | ✅ |
-| Return assigned tool | ✅ | ✅ |
+| Request a return | ✅ | ✅ |
+| Accept / reject return requests | ❌ | ✅ |
 | Add / edit / delete tools | ❌ | ✅ |
 | Assign tools to workers | ❌ | ✅ |
 | Manage users | ❌ | ✅ |
@@ -119,8 +127,10 @@ GET    /api/tools/:id        Single tool       [protected]
 POST   /api/tools            Create tool       [admin]
 PUT    /api/tools/:id        Update tool       [admin]
 DELETE /api/tools/:id        Delete tool       [admin]
-POST   /api/tools/:id/assign Assign to user    [admin]
-POST   /api/tools/:id/return Return tool       [protected]
+POST   /api/tools/:id/assign          Assign to user       [admin]
+POST   /api/tools/:id/request-return  Worker requests return [protected]
+POST   /api/tools/:id/confirm-return  Admin accepts return   [admin]
+POST   /api/tools/:id/reject-return   Admin rejects return   [admin]
 ```
 
 ### Users — `/api/users`
@@ -244,8 +254,10 @@ pm2 save && pm2 startup
   location:          String
   condition:         Enum ['new','good','fair','poor','damaged']
   imageUrl:          String
-  status:            Enum ['available','in-use','damaged']
-  assignedTo:        ObjectId → User
+  status:              Enum ['available','in-use','pending-return','damaged']
+  assignedTo:          ObjectId → User
+  returnRequestedAt:   Date (set when worker submits return request)
+  returnRequestedBy:   ObjectId → User (who submitted the request)
   createdAt / updatedAt: timestamps
 }
 ```
