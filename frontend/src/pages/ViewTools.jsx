@@ -4,9 +4,10 @@ import { toolsAPI } from '../../api';
 import Navbar from '../components/Navbar';
 
 const statusColors = {
-  available: 'bg-success',
-  'in-use': 'bg-warning text-dark',
-  damaged: 'bg-secondary',
+  available:        'bg-success',
+  'in-use':         'bg-warning text-dark',
+  'pending-return': 'bg-info text-dark',
+  damaged:          'bg-secondary',
 };
 
 const ViewTools = () => {
@@ -92,6 +93,7 @@ const ViewTools = () => {
                   <option>All</option>
                   <option value="available">Available</option>
                   <option value="in-use">In Use</option>
+                  <option value="pending-return">Pending Return</option>
                   <option value="damaged">Damaged</option>
                 </select>
               </div>

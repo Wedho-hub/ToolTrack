@@ -73,8 +73,12 @@ export const toolsAPI = {
   update: (id, toolData) => API.put(`/tools/${id}`, toolData),
   delete: (id) => API.delete(`/tools/${id}`),
   assign: (id, assignmentData) => API.post(`/tools/${id}/assign`, assignmentData),
-  return: (id, returnData) => API.post(`/tools/${id}/return`, returnData),
   getMyTools: () => API.get('/tools/my-tools'),
+
+  // Two-step return workflow
+  requestReturn: (id) => API.post(`/tools/${id}/request-return`),
+  confirmReturn: (id) => API.post(`/tools/${id}/confirm-return`),
+  rejectReturn: (id, reason) => API.post(`/tools/${id}/reject-return`, { reason }),
 };
 
 // Users API calls

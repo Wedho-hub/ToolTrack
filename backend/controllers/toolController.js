@@ -8,7 +8,9 @@ import User from '../models/User.js';
  */
 const getTools = async (req, res) => {
   try {
-    const tools = await Tool.find().populate('assignedTo', 'name email');
+    const tools = await Tool.find()
+      .populate('assignedTo', 'name email')
+      .populate('returnRequestedBy', 'name email');
     res.json({ success: true, tools });
   } catch (error) {
     console.error('Error fetching tools:', error);
@@ -23,7 +25,9 @@ const getTools = async (req, res) => {
  */
 const getTool = async (req, res) => {
   try {
-    const tool = await Tool.findById(req.params.id).populate('assignedTo', 'name email');
+    const tool = await Tool.findById(req.params.id)
+      .populate('assignedTo', 'name email')
+      .populate('returnRequestedBy', 'name email');
     if (!tool) {
       return res.status(404).json({ success: false, message: 'Tool not found' });
     }
@@ -41,7 +45,8 @@ const getTool = async (req, res) => {
  */
 const getMyTools = async (req, res) => {
   try {
-    const tools = await Tool.find({ assignedTo: req.user.id }).populate('assignedTo', 'name email');
+    const tools = await Tool.find({ assignedTo: req.user.id })
+      .populate('assignedTo', 'name email');
     res.json({ success: true, tools });
   } catch (error) {
     console.error('Error fetching user tools:', error);
@@ -57,9 +62,7 @@ const getMyTools = async (req, res) => {
 const createTool = async (req, res) => {
   try {
     const { name, description, category, quantity, location, condition, imageUrl } = req.body;
-    
-    // Create tool with specified quantity
-    const toolData = {
+    const tool = new Tool({
       name,
       description,
       category,
@@ -67,12 +70,9 @@ const createTool = async (req, res) => {
       availableQuantity: quantity,
       location,
       condition,
-      imageUrl
-    };
-    
-    const tool = new Tool(toolData);
+      imageUrl,
+    });
     const savedTool = await tool.save();
-    
     res.status(201).json({ success: true, tool: savedTool });
   } catch (error) {
     console.error('Error creating tool:', error);
@@ -92,11 +92,9 @@ const updateTool = async (req, res) => {
       req.body,
       { new: true, runValidators: true }
     );
-    
     if (!tool) {
       return res.status(404).json({ success: false, message: 'Tool not found' });
     }
-    
     res.json({ success: true, tool });
   } catch (error) {
     console.error('Error updating tool:', error);
@@ -112,11 +110,9 @@ const updateTool = async (req, res) => {
 const deleteTool = async (req, res) => {
   try {
     const tool = await Tool.findByIdAndDelete(req.params.id);
-    
     if (!tool) {
       return res.status(404).json({ success: false, message: 'Tool not found' });
     }
-    
     res.json({ success: true, message: 'Tool removed successfully' });
   } catch (error) {
     console.error('Error deleting tool:', error);
@@ -132,36 +128,27 @@ const deleteTool = async (req, res) => {
 const assignTool = async (req, res) => {
   try {
     const { userId } = req.body;
-    
-    // Find the tool
     const tool = await Tool.findById(req.params.id);
     if (!tool) {
       return res.status(404).json({ success: false, message: 'Tool not found' });
     }
-    
-    // Check if tool is available
     if (tool.availableQuantity <= 0) {
       return res.status(400).json({ success: false, message: 'No tools available for assignment' });
     }
-    
-    // Find the user
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-    
-    // Update tool assignment
+
     tool.assignedTo = userId;
     tool.availableQuantity -= 1;
     tool.status = 'in-use';
-    
+    // Clear any stale return request data
+    tool.returnRequestedAt = null;
+    tool.returnRequestedBy = null;
+
     const updatedTool = await tool.save();
-    
-    res.json({ 
-      success: true, 
-      tool: updatedTool, 
-      message: `Tool assigned to ${user.name}` 
-    });
+    res.json({ success: true, tool: updatedTool, message: `Tool assigned to ${user.name}` });
   } catch (error) {
     console.error('Error assigning tool:', error);
     res.status(500).json({ success: false, message: 'Failed to assign tool' });
@@ -169,38 +156,104 @@ const assignTool = async (req, res) => {
 };
 
 /**
- * @desc    Return tool from user
- * @route   POST /api/tools/:id/return
- * @access  Private
+ * @desc    Worker requests a return — does NOT release the tool yet
+ * @route   POST /api/tools/:id/request-return
+ * @access  Private (assigned worker or admin)
  */
-const returnTool = async (req, res) => {
+const requestReturn = async (req, res) => {
   try {
-    // Find the tool
+    const tool = await Tool.findById(req.params.id).populate('assignedTo', 'name email');
+    if (!tool) {
+      return res.status(404).json({ success: false, message: 'Tool not found' });
+    }
+    if (!tool.assignedTo) {
+      return res.status(400).json({ success: false, message: 'Tool is not currently assigned' });
+    }
+    if (tool.status === 'pending-return') {
+      return res.status(400).json({ success: false, message: 'A return request is already pending for this tool' });
+    }
+    // Only the assigned worker or an admin can request a return
+    const isAssignee = tool.assignedTo._id.toString() === req.user.id.toString();
+    const isAdmin = req.user.role === 'admin';
+    if (!isAssignee && !isAdmin) {
+      return res.status(403).json({ success: false, message: 'You can only request a return for tools assigned to you' });
+    }
+
+    tool.status = 'pending-return';
+    tool.returnRequestedAt = new Date();
+    tool.returnRequestedBy = req.user.id;
+
+    const updatedTool = await tool.save();
+    res.json({
+      success: true,
+      tool: updatedTool,
+      message: 'Return request submitted. An admin will verify and confirm the return.',
+    });
+  } catch (error) {
+    console.error('Error requesting return:', error);
+    res.status(500).json({ success: false, message: 'Failed to submit return request' });
+  }
+};
+
+/**
+ * @desc    Admin confirms a return — releases the tool back to available
+ * @route   POST /api/tools/:id/confirm-return
+ * @access  Private/Admin
+ */
+const confirmReturn = async (req, res) => {
+  try {
     const tool = await Tool.findById(req.params.id);
     if (!tool) {
       return res.status(404).json({ success: false, message: 'Tool not found' });
     }
-    
-    // Check if tool is assigned
-    if (!tool.assignedTo) {
-      return res.status(400).json({ success: false, message: 'Tool is not assigned' });
+    if (tool.status !== 'pending-return') {
+      return res.status(400).json({ success: false, message: 'No pending return request for this tool' });
     }
-    
-    // Update tool status
+
     tool.assignedTo = null;
-    tool.availableQuantity += 1;
+    tool.availableQuantity = Math.min(tool.availableQuantity + 1, tool.totalQuantity);
     tool.status = 'available';
-    
+    tool.returnRequestedAt = null;
+    tool.returnRequestedBy = null;
+
     const updatedTool = await tool.save();
-    
-    res.json({ 
-      success: true, 
-      tool: updatedTool, 
-      message: 'Tool returned successfully' 
+    res.json({ success: true, tool: updatedTool, message: 'Return confirmed. Tool is now available.' });
+  } catch (error) {
+    console.error('Error confirming return:', error);
+    res.status(500).json({ success: false, message: 'Failed to confirm return' });
+  }
+};
+
+/**
+ * @desc    Admin rejects a return request — tool stays assigned to the worker
+ * @route   POST /api/tools/:id/reject-return
+ * @access  Private/Admin
+ */
+const rejectReturn = async (req, res) => {
+  try {
+    const tool = await Tool.findById(req.params.id).populate('assignedTo', 'name email');
+    if (!tool) {
+      return res.status(404).json({ success: false, message: 'Tool not found' });
+    }
+    if (tool.status !== 'pending-return') {
+      return res.status(400).json({ success: false, message: 'No pending return request for this tool' });
+    }
+
+    const { reason } = req.body;
+
+    tool.status = 'in-use';
+    tool.returnRequestedAt = null;
+    tool.returnRequestedBy = null;
+
+    const updatedTool = await tool.save();
+    res.json({
+      success: true,
+      tool: updatedTool,
+      message: `Return rejected${reason ? ': ' + reason : ''}. Tool remains assigned to ${tool.assignedTo?.name || 'worker'}.`,
     });
   } catch (error) {
-    console.error('Error returning tool:', error);
-    res.status(500).json({ success: false, message: 'Failed to return tool' });
+    console.error('Error rejecting return:', error);
+    res.status(500).json({ success: false, message: 'Failed to reject return' });
   }
 };
 
@@ -212,5 +265,7 @@ export default {
   updateTool,
   deleteTool,
   assignTool,
-  returnTool
+  requestReturn,
+  confirmReturn,
+  rejectReturn,
 };
