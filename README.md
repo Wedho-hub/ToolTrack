@@ -1,281 +1,279 @@
-# ToolTrack - Tool Management System
+# ToolTrack — Tool Inventory & Assignment Management
 
-A comprehensive tool management system built with React (frontend) and Node.js/Express (backend) that allows organizations to track, assign, and manage tools efficiently.
+**ToolTrack** is a production-ready full-stack web application that gives organizations real-time control over their physical tool inventory. Admins manage and assign tools; workers see exactly what they've been issued and can return it with one click.
 
-## 🚀 Features
+Live demo: [tooltracking.netlify.app](https://tooltracking.netlify.app)
 
-### Core Functionality
-- **User Authentication**: Secure login/register system with JWT tokens
-- **Role-based Access**: Admin and Worker roles with different permissions
-- **Tool Management**: Add, edit, delete, and view tools
-- **Tool Assignment**: Assign tools to users and track usage
-- **Real-time Status**: Track tool availability and usage status
-- **Dashboard**: Personalized view of assigned tools
+---
 
-### User Roles
-- **Admin**: Full access to manage tools, users, and assignments
-- **Worker**: Can view available tools and manage their assigned tools
+## Why ToolTrack?
 
-## 🛠️ Tech Stack
+Most teams track tools on spreadsheets — or not at all. ToolTrack replaces that with a clean, role-aware web app backed by a secure REST API. It's designed to be easy to hand off, extend, or white-label.
+
+---
+
+## Feature Highlights
+
+| Feature | Details |
+|---|---|
+| **Inventory Management** | Add tools with name, category, condition, quantity, location, and image |
+| **Tool Assignment** | Assign tools to workers; availability counts update automatically |
+| **One-click Returns** | Workers return tools from their dashboard; status updates in real time |
+| **Role-Based Access** | Admins have full CRUD control; workers see only their assigned tools |
+| **Search & Filter** | Filter by name, category, or status across the full inventory |
+| **JWT Authentication** | 30-day tokens, auto-logout on expiry, bcrypt-hashed passwords |
+| **Password Strength Meter** | Live feedback during registration |
+| **Responsive Design** | Fully usable on mobile, tablet, and desktop |
+| **404 Handling** | Graceful not-found page with navigation recovery |
+
+---
+
+## Tech Stack
 
 ### Frontend
-- **React 18** with Vite for fast development
-- **React Router** for client-side routing
-- **Axios** for API calls
-- **Bootstrap 5** for responsive UI
-- **Context API** for state management
+- **React 18** with Vite — fast dev server and optimized production builds
+- **React Router v6** — client-side routing with protected routes
+- **Bootstrap 5** — responsive grid and utility classes
+- **Axios** — HTTP client with request/response interceptors
+- **Context API** — lightweight global auth state
 
 ### Backend
-- **Node.js** with Express.js
-- **MongoDB** with Mongoose ODM
-- **JWT** for authentication
-- **bcryptjs** for password hashing
-- **dotenv** for environment variables
+- **Node.js + Express** — REST API with clean controller/route separation
+- **MongoDB + Mongoose** — flexible document store with ODM
+- **JWT** — stateless authentication with `jsonwebtoken`
+- **bcryptjs** — password hashing with salted rounds
+- **CORS** — configured for local dev and production domains
 
-## 📁 Project Structure
+### Infrastructure
+- **Frontend**: Netlify (CI/CD via Git push)
+- **Backend**: Render.com
+- **Database**: MongoDB Atlas (cloud)
+
+---
+
+## Project Structure
 
 ```
 ToolTrack/
 ├── backend/
-│   ├── config/
-│   │   └── db.js              # Database connection
+│   ├── config/db.js              # MongoDB connection
 │   ├── controllers/
-│   │   ├── authController.js  # Authentication logic
-│   │   ├── toolController.js  # Tool CRUD operations
-│   │   └── userController.js  # User management
-│   ├── middleware/
-│   │   └── authMiddleware.js  # JWT verification
+│   │   ├── authController.js     # Register, login, getCurrentUser
+│   │   ├── toolController.js     # CRUD + assign + return
+│   │   └── userController.js     # Admin user management
+│   ├── middleware/authMiddleware.js  # JWT verify + role guard
 │   ├── models/
-│   │   ├── Tool.js            # Tool schema
-│   │   └── User.js            # User schema
-│   ├── routes/
-│   │   ├── authRoutes.js      # Auth endpoints
-│   │   ├── toolRoutes.js      # Tool endpoints
-│   │   └── userRoutes.js      # User endpoints
-│   ├── server.js              # Express server
-│   └── .env                   # Environment variables
-├── frontend/
-│   ├── src/
-│   │   ├── components/        # Reusable components
-│   │   ├── contexts/          # React contexts
-│   │   ├── pages/             # Page components
-│   │   ├── App.jsx            # Main app component
-│   │   └── main.jsx           # Entry point
-│   ├── api.js                 # API configuration
-│   └── vite.config.js         # Vite configuration
-└── README.md
+│   │   ├── Tool.js               # Tool schema
+│   │   └── User.js               # User schema (pre-save hash)
+│   ├── routes/                   # Express routers
+│   └── server.js                 # App entry, CORS, error handling
+│
+└── frontend/
+    ├── api.js                    # Axios instance + interceptors
+    └── src/
+        ├── components/
+        │   ├── Navbar.jsx        # Shared sticky navigation
+        │   └── ProtectedRoute.jsx
+        ├── contexts/AuthContext.jsx
+        ├── pages/
+        │   ├── Welcome.jsx       # Marketing landing page
+        │   ├── Login.jsx         # Split-panel login
+        │   ├── Register.jsx      # Register with role picker + strength meter
+        │   ├── Dashboard.jsx     # Worker: assigned tools + return
+        │   ├── ViewTools.jsx     # All tools with search/filter
+        │   ├── ManageTools.jsx   # Admin: table view + assign modal
+        │   ├── AddEditTool.jsx   # Add/edit tool form
+        │   └── NotFound.jsx      # 404 page
+        └── styles/global.css     # CSS variables + utility classes
 ```
 
-## 🚦 Getting Started
+---
+
+## User Roles
+
+| Action | Worker | Admin |
+|---|---|---|
+| View all tools | ✅ | ✅ |
+| View assigned tools | ✅ | ✅ |
+| Return assigned tool | ✅ | ✅ |
+| Add / edit / delete tools | ❌ | ✅ |
+| Assign tools to workers | ❌ | ✅ |
+| Manage users | ❌ | ✅ |
+
+---
+
+## API Reference
+
+### Auth — `/api/auth`
+```
+POST   /api/auth/register    Register a new user (returns JWT)
+POST   /api/auth/login       Login (returns JWT)
+GET    /api/auth/me          Get current user  [protected]
+```
+
+### Tools — `/api/tools`
+```
+GET    /api/tools            List all tools    [protected]
+GET    /api/tools/my-tools   User's tools      [protected]
+GET    /api/tools/:id        Single tool       [protected]
+POST   /api/tools            Create tool       [admin]
+PUT    /api/tools/:id        Update tool       [admin]
+DELETE /api/tools/:id        Delete tool       [admin]
+POST   /api/tools/:id/assign Assign to user    [admin]
+POST   /api/tools/:id/return Return tool       [protected]
+```
+
+### Users — `/api/users`
+```
+GET    /api/users            List all users    [admin]
+GET    /api/users/:id        Single user       [admin]
+PUT    /api/users/:id        Update user       [admin]
+DELETE /api/users/:id        Delete user       [admin]
+```
+
+---
+
+## Getting Started (Local)
 
 ### Prerequisites
-- Node.js (v16 or higher)
-- MongoDB (local or cloud instance)
-- npm or yarn
+- Node.js 18+
+- MongoDB (local) or a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster
 
-### Installation
+### 1 — Clone and install
 
-1. **Clone the repository**
 ```bash
-git clone <repository-url>
+git clone https://github.com/your-username/ToolTrack.git
 cd ToolTrack
+
+# Backend
+cd backend && npm install
+
+# Frontend
+cd ../frontend && npm install
 ```
 
-2. **Install backend dependencies**
-```bash
-cd backend
-npm install
-```
+### 2 — Configure environment
 
-3. **Install frontend dependencies**
-```bash
-cd ../frontend
-npm install
-```
+Create `backend/.env`:
 
-4. **Set up environment variables**
-
-Create a `.env` file in the backend directory:
 ```env
 PORT=5000
 MONGO_URI=mongodb://localhost:27017/tooltrack
-JWT_SECRET=your-secret-key-here
+JWT_SECRET=replace-with-a-long-random-secret
+FRONTEND_URL=http://localhost:5173
 ```
 
-5. **Start the development servers**
+Create `frontend/.env`:
 
-Backend:
-```bash
-cd backend
-npm run dev
-```
-
-Frontend:
-```bash
-cd frontend
-npm run dev
-```
-
-The application will be available at:
-- Frontend: http://localhost:5173
-- Backend: http://localhost:5000
-
-## 🔗 API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - User login
-- `GET /api/auth/me` - Get current user (protected)
-
-### Tools
-- `GET /api/tools` - Get all tools
-- `GET /api/tools/:id` - Get tool by ID
-- `POST /api/tools` - Create new tool (admin only)
-- `PUT /api/tools/:id` - Update tool (admin only)
-- `DELETE /api/tools/:id` - Delete tool (admin only)
-- `POST /api/tools/:id/assign` - Assign tool to user (admin only)
-- `POST /api/tools/:id/return` - Return assigned tool
-- `GET /api/tools/my-tools` - Get user's assigned tools
-
-### Users
-- `GET /api/users` - Get all users (admin only)
-- `GET /api/users/:id` - Get user by ID (admin only)
-- `PUT /api/users/:id` - Update user (admin only)
-- `DELETE /api/users/:id` - Delete user (admin only)
-
-## 🎯 Key Components Explained
-
-### Frontend Components
-
-#### `api.js`
-Centralized API configuration with axios interceptors for:
-- Automatic token attachment to requests
-- Response error handling (401 redirects)
-- Base URL configuration
-
-#### `AuthContext.jsx`
-Provides authentication state and methods:
-- `login(token, userData)` - Handles user login
-- `logout()` - Clears user session
-- `user` - Current user object
-- `loading` - Auth loading state
-
-#### `ProtectedRoute.jsx`
-Component wrapper for protected routes that checks authentication status.
-
-#### `ToolForm.jsx`
-Reusable form component for adding/editing tools with validation.
-
-### Backend Architecture
-
-#### `authMiddleware.js`
-JWT verification middleware that:
-- Validates tokens
-- Attaches user to request object
-- Handles unauthorized access
-
-#### `Tool.js` Model
-```javascript
-{
-  name: String,           // Tool name
-  description: String,    // Tool description
-  category: String,       // Tool category
-  totalQuantity: Number,  // Total available
-  availableQuantity: Number, // Currently available
-  status: String,         // available/in-use/maintenance
-  assignedTo: ObjectId    // Reference to User
-}
-```
-
-#### `User.js` Model
-```javascript
-{
-  name: String,           // User's full name
-  email: String,          // Unique email
-  password: String,       // Hashed password
-  role: String,           // admin/worker
-  assignedTools: [ObjectId] // Array of assigned tools
-}
-```
-
-## 🔄 Usage Flow
-
-### For Admins:
-1. Register as admin or login with admin credentials
-2. Navigate to "Manage Tools" to add/edit/delete tools
-3. Assign tools to workers from the tool management interface
-4. Monitor tool usage and availability
-
-### For Workers:
-1. Register as worker or login with worker credentials
-2. View available tools on the dashboard
-3. Request tools from admin
-4. Return tools when done
-
-## 🧪 Testing
-
-### Frontend Testing
-```bash
-cd frontend
-npm run dev
-```
-Test all pages:
-- Login/Register functionality
-- Tool CRUD operations (admin)
-- Tool assignment/return flow
-- Dashboard view for different roles
-
-### Backend Testing
-```bash
-cd backend
-npm run dev
-```
-Test endpoints using tools like Postman or curl:
-```bash
-# Register admin
-curl -X POST http://localhost:5000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Admin","email":"admin@tooltrack.com","password":"admin123","role":"admin"}'
-
-# Login
-curl -X POST http://localhost:5000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@tooltrack.com","password":"admin123"}'
-```
-
-## 🚀 Production Deployment
-
-### Build Frontend
-```bash
-cd frontend
-npm run build
-```
-
-### Environment Variables for Production
 ```env
-NODE_ENV=production
-MONGO_URI=your-production-mongodb-uri
-JWT_SECRET=your-production-secret
+VITE_API_URL=http://localhost:5000
 ```
 
-### PM2 for Backend
+### 3 — Start dev servers
+
+```bash
+# Terminal 1 — backend (runs on :5000)
+cd backend && npm run dev
+
+# Terminal 2 — frontend (runs on :5173)
+cd frontend && npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173).
+
+### 4 — Create your first admin
+
+```bash
+curl -s -X POST http://localhost:5000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Admin","email":"admin@demo.com","password":"admin123","role":"admin"}'
+```
+
+Or use the Register page and select **Admin** role.
+
+---
+
+## Production Deployment
+
+### Frontend (Netlify)
+
+```bash
+cd frontend && npm run build
+# Deploy the dist/ folder, or connect your repo for auto-deploy
+```
+
+Set environment variable in Netlify: `VITE_API_URL=https://your-backend.onrender.com`
+
+Add a `_redirects` file inside `frontend/public/`:
+```
+/*  /index.html  200
+```
+
+### Backend (Render / any Node host)
+
+Set environment variables:
+```
+MONGO_URI=<your Atlas connection string>
+JWT_SECRET=<strong secret>
+FRONTEND_URL=https://your-app.netlify.app
+NODE_ENV=production
+```
+
+Health check endpoint: `GET /api/health`
+
+### PM2 (self-hosted)
+
 ```bash
 npm install -g pm2
-pm2 start backend/server.js --name tooltrack-backend
+pm2 start backend/server.js --name tooltrack-api
+pm2 save && pm2 startup
 ```
 
-## 🤝 Contributing
+---
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## Data Models
 
-## 📄 License
+### Tool
+```js
+{
+  name:              String   (required)
+  description:       String
+  category:          Enum ['Hand Tools','Power Tools','Measuring Tools','Safety Equipment','Other']
+  totalQuantity:     Number   (default: 1)
+  availableQuantity: Number   (default: 1)
+  location:          String
+  condition:         Enum ['new','good','fair','poor','damaged']
+  imageUrl:          String
+  status:            Enum ['available','in-use','damaged']
+  assignedTo:        ObjectId → User
+  createdAt / updatedAt: timestamps
+}
+```
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+### User
+```js
+{
+  name:     String (required)
+  email:    String (required, unique)
+  password: String (bcrypt-hashed, pre-save hook)
+  role:     Enum ['admin','worker'] (default: 'worker')
+  createdAt / updatedAt: timestamps
+}
+```
 
-## 🆘 Support
+---
 
-For support, email support@tooltrack.com or create an issue in the GitHub repository.
+## Potential Extensions
+
+- Email notifications when a tool is assigned or overdue
+- Tool request workflow (workers request; admin approves)
+- QR code labels for physical tools
+- Maintenance scheduling and service history
+- CSV export of inventory or assignment history
+- Dark mode
+
+---
+
+## License
+
+MIT — free to use, modify, and distribute.
