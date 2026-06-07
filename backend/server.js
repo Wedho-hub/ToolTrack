@@ -34,38 +34,31 @@ connectDB();
 
 // --- CORS setup ---
 const allowedOrigins = [
-  'http://localhost:5173',                     // Local dev (Vite)
-  'http://localhost:3000',                     // Local dev (React)
   'https://tooltracking.netlify.app',          // Deployed frontend
   process.env.FRONTEND_URL || ''               // Optional: use ENV
 ];
 
-// Add any Netlify preview URLs if FRONTEND_URL contains netlify
-if (process.env.FRONTEND_URL && process.env.FRONTEND_URL.includes('netlify')) {
-  // Allow all netlify deploy previews for this app
-  const netlifyBase = process.env.FRONTEND_URL.replace(/https?:\/\//, '').split('.')[0];
-  allowedOrigins.push(`https://${netlifyBase}--*.netlify.app`);
-}
-
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like Postman, mobile apps, etc.)
-      if (!origin) {
+      // Allow requests with no origin (Postman, curl, mobile apps)
+      if (!origin) return callback(null, true);
+
+      // Allow any localhost port for local development
+      if (/^http:\/\/localhost(:\d+)?$/.test(origin)) {
         return callback(null, true);
       }
 
-      // Check exact matches first
+      // Allow Netlify preview deployments
+      if (origin.includes('netlify.app')) {
+        return callback(null, true);
+      }
+
+      // Check exact matches (production URL + FRONTEND_URL env var)
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      // Check for Netlify preview URLs (pattern matching)
-      if (origin && origin.includes('netlify.app')) {
-        return callback(null, true);
-      }
-
-      // Log rejected origins for debugging
       console.warn(`🚫 CORS rejected origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     },
