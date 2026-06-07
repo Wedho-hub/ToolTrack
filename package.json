@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "react-toastify": "^11.0.5"
+  },
+  "devDependencies": {
+    "playwright": "^1.60.0"
   }
 }
